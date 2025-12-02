@@ -1,7 +1,7 @@
 import path from 'path';
 import {MOCHA_TIMEOUT, initSession, deleteSession} from '../helpers/session';
 import {GENERIC_CAPS, amendCapabilities} from '../desired';
-import xcode from 'appium-xcode';
+import xcode from '@limrun/appium-xcode';
 
 const APP_UNDER_TEST_PATH = path.resolve(__dirname, '..', '..', 'assets', 'XCTesterApp.app');
 const TEST_BUNDLE_PATH = path.resolve(
@@ -30,7 +30,7 @@ if (process.env.LAUNCH_WITH_IDB) {
 
       // idb_companion doesn't work with xcode 13 or lower due to concurrency lib issue.
       if (
-        /** @type {import('appium-xcode').XcodeVersion} */ (await xcode.getVersion(true)).major < 14
+        /** @type {import('@limrun/appium-xcode').XcodeVersion} */ (await xcode.getVersion(true)).major < 14
       ) {
         this.skip();
       }

@@ -1,4 +1,4 @@
-import xcode from 'appium-xcode';
+import xcode from '@limrun/appium-xcode';
 import {JWProxy} from 'appium/driver';
 import _ from 'lodash';
 import {createSandbox} from 'sinon';

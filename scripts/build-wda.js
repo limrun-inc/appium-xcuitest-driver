@@ -1,7 +1,7 @@
 const {WebDriverAgent} = require('appium-webdriveragent');
-const xcode = require('appium-xcode');
-const {Simctl} = require('node-simctl');
-const {getSimulator} = require('appium-ios-simulator');
+const xcode = require('@limrun/appium-xcode');
+const {Simctl} = require('@limrun/node-simctl');
+const {getSimulator} = require('@limrun/appium-ios-simulator');
 const {logger} = require('appium/support');
 const {parseArgValue} = require('./utils');
 

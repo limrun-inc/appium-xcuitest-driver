@@ -3,7 +3,7 @@ import {SubProcess, exec} from 'teen_process';
 import {util} from 'appium/support';
 import { LineConsumingLog } from './line-consuming-log';
 import { transports, createLogger, format, Logger } from 'winston';
-import type { Simulator } from 'appium-ios-simulator';
+import type { Simulator } from '@limrun/appium-ios-simulator';
 import type { AppiumLogger } from '@appium/types';
 import fs from 'node:fs/promises';
 

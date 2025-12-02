@@ -1,5 +1,5 @@
 {
-  "name": "appium-xcuitest-driver",
+  "name": "@limrun/appium-xcuitest-driver",
   "description": "Appium driver for iOS using XCUITest for backend",
   "keywords": [
     "appium",
@@ -8,7 +8,7 @@
     "xcuitest",
     "xctest"
   ],
-  "version": "10.4.3",
+  "version": "10.4.3-lim.1",
   "author": "Appium Contributors",
   "license": "Apache-2.0",
   "repository": {
@@ -84,10 +84,10 @@
     "@colors/colors": "^1.6.0",
     "appium-idb": "^2.0.0",
     "appium-ios-device": "^3.0.0",
-    "appium-ios-simulator": "file:../appium-ios-simulator/build",
+    "@limrun/appium-ios-simulator": "7.0.2-lim.1",
     "appium-remote-debugger": "^15.0.3",
     "appium-webdriveragent": "^10.2.1",
-    "appium-xcode": "file:../appium-xcode",
+    "@limrun/appium-xcode": "6.1.2-lim.1",
     "async-lock": "^1.4.0",
     "asyncbox": "^3.0.0",
     "bluebird": "^3.7.2",
@@ -99,7 +99,7 @@
     "moment": "^2.29.4",
     "moment-timezone": "^0.x",
     "node-devicectl": "^1.1.0",
-    "node-simctl": "^8.0.0",
+    "@limrun/node-simctl": "^8.0.5-lim.1",
     "portscanner": "^2.2.0",
     "semver": "^7.5.4",
     "source-map-support": "^0.x",

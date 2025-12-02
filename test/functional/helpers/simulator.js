@@ -1,9 +1,9 @@
 import _ from 'lodash';
-import {Simctl} from 'node-simctl';
+import {Simctl} from '@limrun/node-simctl';
 import {retryInterval} from 'asyncbox';
 import {resetTestProcesses} from 'appium-webdriveragent';
 import {shutdownSimulator} from '../../../lib/simulator-management';
-import {killAllSimulators as simKill} from 'appium-ios-simulator';
+import {killAllSimulators as simKill} from '@limrun/appium-ios-simulator';
 
 export async function killAllSimulators() {
   const simctl = new Simctl();
@@ -31,7 +31,7 @@ export async function deleteDeviceWithRetry(udid) {
 }
 
 /**
- * @param {import('appium-ios-simulator').Simulator} [sim]
+ * @param {import('@limrun/appium-ios-simulator').Simulator} [sim]
  */
 export async function cleanupSimulator(sim) {
   if (!sim) {

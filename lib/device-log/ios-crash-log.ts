@@ -7,7 +7,7 @@ import {IOSLog} from './ios-log';
 import { toLogEntry, grepFile } from './helpers';
 import type { AppiumLogger } from '@appium/types';
 import type { BaseDeviceClient } from '../real-device-clients/base-device-client';
-import type { Simulator } from 'appium-ios-simulator';
+import type { Simulator } from '@limrun/appium-ios-simulator';
 import type { LogEntry } from '../commands/types';
 
 // The file format has been changed from '.crash' to '.ips' since Monterey.
