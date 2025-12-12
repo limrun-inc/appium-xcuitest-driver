@@ -1346,6 +1346,8 @@ export class XCUITestDriver
               devicesSetPath: this.opts.simulatorDevicesSetPath,
               // @ts-ignore This is ok
               logger: this.log,
+              limInstanceApiUrl: this.opts.limInstanceApiUrl,
+              limInstanceToken: this.opts.limInstanceToken,
             });
             return {device, realDevice: false, udid: this.opts.udid};
           } catch {

@@ -59,6 +59,8 @@ export async function getExistingSim(this: XCUITestDriver): Promise<Simulator | 
     udid,
     simulatorDevicesSetPath: devicesSetPath,
     platformName,
+    limInstanceApiUrl,
+    limInstanceToken,
   } = this.opts;
 
   const platform = normalizePlatformName(platformName);
@@ -69,9 +71,11 @@ export async function getExistingSim(this: XCUITestDriver): Promise<Simulator | 
       devicesSetPath,
       // @ts-ignore This is ok
       logger: this.log,
+      limInstanceApiUrl,
+      limInstanceToken,
     });
 
-  const simctl = new Simctl({devicesSetPath});
+  const simctl = new Simctl({devicesSetPath, limInstanceApiUrl, limInstanceToken});
   let devicesMap: Record<string, any[]> | undefined;
   if (udid && _.toLower(udid) !== UDID_AUTO) {
     this.log.debug(`Looking for an existing Simulator with UDID '${udid}'`);

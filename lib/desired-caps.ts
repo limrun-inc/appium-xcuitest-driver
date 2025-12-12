@@ -392,6 +392,18 @@ export const desiredCapConstraints = {
   pageLoadStrategy: {
     isString: true,
     inclusionCaseInsensitive: ['none', 'eager', 'normal']
+  },
+  // Lim Instance integration options
+  limInstanceApiUrl: {
+    isString: true,
+  },
+  limInstanceToken: {
+    isString: true,
+  },
+  // Custom headers to be sent with every request to WebDriverAgent
+  // Useful when WDA is behind a gateway that requires authentication headers
+  wdaRequestHeaders: {
+    isObject: true,
   }
 } as const satisfies Constraints;
 
