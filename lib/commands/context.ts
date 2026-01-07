@@ -14,6 +14,7 @@ import type {XCUITestDriver} from '../driver';
 import type {Page} from '../types';
 import type {ViewContext, FullContext, PageChangeNotification} from './types';
 import type {Simulator} from 'appium-ios-simulator';
+import type { LogLevel } from '@limrun/api';
 
 const WEBVIEW_WIN = 'WEBVIEW';
 const WEBVIEW_BASE = `${WEBVIEW_WIN}_`;
@@ -458,6 +459,9 @@ export async function getNewRemoteDebugger(this: XCUITestDriver): Promise<Remote
       socketChunkSize: this.opts.safariSocketChunkSize,
       webInspectorMaxFrameLength: this.opts.safariWebInspectorMaxFrameLength,
       pageLoadStrategy: this.caps.pageLoadStrategy,
+      limInstanceApiUrl: this.opts.limInstanceApiUrl,
+      limInstanceToken: this.opts.limInstanceToken,
+      limLogLevel: this.opts.limLogLevel as LogLevel | undefined,
     },
     this.isRealDevice(),
   );

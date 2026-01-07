@@ -21,6 +21,8 @@ import {LRUCache} from 'lru-cache';
 import EventEmitter from 'node:events';
 import path from 'node:path';
 import url from 'node:url';
+import {Ios} from '@limrun/api';
+import {setLimrunIosClient} from 'appium-xcode';
 import {
   SUPPORTED_EXTENSIONS,
   SAFARI_BUNDLE_ID,
@@ -291,6 +293,7 @@ export class XCUITestDriver
   pageLoadMs: number;
   landscapeWebCoordsOffset: number;
   mjpegStream?: mjpeg.MJpegStream;
+  _limClient?: Ios.InstanceClient;
 
   constructor(opts: XCUITestDriverOpts, shouldValidateCaps = true) {
     super(opts, shouldValidateCaps);
@@ -339,6 +342,16 @@ export class XCUITestDriver
     this.doesSupportBidi = true;
     this._wda = null;
   }
+  /**
+   * Gets the Limrun iOS instance client.
+   * @throws {Error} If the client has not been initialized.
+   */
+  get limClient(): Ios.InstanceClient {
+    if (!this._limClient) {
+      throw new Error('Limrun client not initialized. Ensure limInstanceApiUrl and limInstanceToken capabilities are provided.');
+    }
+    return this._limClient;
+  }
 
   // Override methods from BaseDriver
   override async createSession(
@@ -356,6 +369,15 @@ export class XCUITestDriver
       if (this.mergeCliArgsToOpts()) {
         this.validateDesiredCaps({...caps, ...this.cliArgs});
       }
+      if (!this.opts.limInstanceApiUrl || !this.opts.limInstanceToken) {
+        throw new Error('limInstanceApiUrl and limInstanceToken are required');
+      }
+      this._limClient = await Ios.createInstanceClient({
+        apiUrl: this.opts.limInstanceApiUrl,
+        token: this.opts.limInstanceToken,
+        logLevel: 'debug',
+      });
+      setLimrunIosClient(this._limClient);
 
       await this.start();
 
@@ -865,6 +887,7 @@ export class XCUITestDriver
     await this.runReset();
 
     this._wda = new WebDriverAgent(
+      undefined,
       {
         ...this.opts,
         device: this.device,
@@ -1347,6 +1370,7 @@ export class XCUITestDriver
           try {
             const device = await getSimulator(this.opts.udid, {
               devicesSetPath: this.opts.simulatorDevicesSetPath,
+              limClient: this.limClient,
               // @ts-ignore This is ok
               logger: this.log,
             });

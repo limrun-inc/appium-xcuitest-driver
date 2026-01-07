@@ -18,7 +18,7 @@ const APPIUM_SIM_PREFIX = 'appiumTest';
 export async function createSim(this: XCUITestDriver): Promise<Simulator> {
   const {simulatorDevicesSetPath: devicesSetPath, deviceName, platformVersion} = this.opts;
   const platform = normalizePlatformName(this.opts.platformName);
-  const simctl = new Simctl({devicesSetPath});
+  const simctl = new Simctl({devicesSetPath, limClient: this.limClient});
   if (!deviceName) {
     let deviceNames: string[] = [];
     try {
@@ -76,7 +76,7 @@ export async function getExistingSim(this: XCUITestDriver): Promise<Simulator | 
       logger: this.log,
     });
 
-  const simctl = new Simctl({devicesSetPath});
+  const simctl = new Simctl({devicesSetPath, limClient: this.limClient});
   let devicesMap: Record<string, any[]> | undefined;
   if (udid && _.toLower(udid) !== UDID_AUTO) {
     this.log.debug(`Looking for an existing Simulator with UDID '${udid}'`);
@@ -245,6 +245,7 @@ export async function shutdownOtherSimulators(this: XCUITestDriver): Promise<voi
   const device = this.device as Simulator;
   const simctl = new Simctl({
     devicesSetPath: device.devicesSetPath,
+    limClient: this.limClient,
   });
   const allDevices = _.flatMap(_.values(await simctl.getDevices()));
   const otherBootedDevices = allDevices

@@ -74,7 +74,7 @@ export class IOSSimulatorLog extends LineConsumingLog {
       `Starting log capture for iOS Simulator with udid '${this.sim.udid}' ` +
       `via simctl using the following arguments '${util.quote(spawnArgs)}'`
     );
-    await this.cleanupObsoleteLogStreams();
+    //await this.cleanupObsoleteLogStreams();
     try {
       this.proc = await this.sim.simctl.spawnSubProcess(spawnArgs);
       await this.finishStartingLogCapture();
@@ -172,13 +172,15 @@ export class IOSSimulatorLog extends LineConsumingLog {
         this.onOutput(line, ...(streamName === 'stderr' ? ['STDERR'] : []));
       });
     }
-    const startDetector = (stdout: string, stderr: string) => {
-      if (EXECVP_ERROR_PATTERN.test(stderr)) {
-        throw new Error('iOS log capture process failed to start');
-      }
-      return Boolean(stdout || stderr);
-    };
-    await this.proc.start(startDetector, START_TIMEOUT);
+    // We immediately start anyway so this is commented out.
+    //
+    // const startDetector = (stdout: string, stderr: string) => {
+    //   if (EXECVP_ERROR_PATTERN.test(stderr)) {
+    //     throw new Error('iOS log capture process failed to start');
+    //   }
+    //   return Boolean(stdout || stderr);
+    // };
+    // await this.proc.start(startDetector, START_TIMEOUT);
   }
 
   private async cleanupObsoleteLogStreams(): Promise<void> {
