@@ -44,6 +44,7 @@ export async function createSim(this: XCUITestDriver): Promise<Simulator> {
   this.log.debug(`Creating a temporary Simulator device '${simName}'`);
   const udid = await simctl.createDevice(simName, deviceName, platformVersion, {platform});
   return await getSimulator(udid, {
+    limClient: this.limClient,
     platform,
     checkExistence: false,
     devicesSetPath,
@@ -72,6 +73,7 @@ export async function getExistingSim(this: XCUITestDriver): Promise<Simulator | 
       platform,
       checkExistence: false,
       devicesSetPath,
+      limClient: this.limClient,
       // @ts-ignore This is ok
       logger: this.log,
     });
