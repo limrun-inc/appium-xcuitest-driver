@@ -21,7 +21,7 @@ import {LRUCache} from 'lru-cache';
 import EventEmitter from 'node:events';
 import path from 'node:path';
 import url from 'node:url';
-import {Ios} from '@limrun/api';
+import {Ios, type LogLevel} from '@limrun/api';
 import {setLimrunIosClient} from 'appium-xcode';
 import {
   SUPPORTED_EXTENSIONS,
@@ -375,7 +375,7 @@ export class XCUITestDriver
       this._limClient = await Ios.createInstanceClient({
         apiUrl: this.opts.limInstanceApiUrl,
         token: this.opts.limInstanceToken,
-        logLevel: 'debug',
+        logLevel: (this.opts.limLogLevel as LogLevel | undefined) ?? 'info',
       });
       setLimrunIosClient(this._limClient);
 
