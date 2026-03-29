@@ -8,7 +8,7 @@
     "xcuitest",
     "xctest"
   ],
-  "version": "10.14.6-lim.8",
+  "version": "10.14.6-lim.9",
   "author": "Appium Contributors",
   "license": "Apache-2.0",
   "repository": {
@@ -24,7 +24,7 @@
   },
   "appium": {
     "driverName": "@limrun/xcuitest",
-    "automationName": "XCUITest",
+    "automationName": "@limrun/xcuitest",
     "platformNames": [
       "iOS",
       "tvOS"
