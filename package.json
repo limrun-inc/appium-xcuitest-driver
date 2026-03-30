@@ -8,23 +8,23 @@
     "xcuitest",
     "xctest"
   ],
-  "version": "10.14.6-lim.7",
+  "version": "10.14.6-lim.9",
   "author": "Appium Contributors",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/appium/appium-xcuitest-driver.git"
+    "url": "https://github.com/limrun-inc/appium-xcuitest-driver.git"
   },
   "bugs": {
-    "url": "https://github.com/appium/appium-xcuitest-driver/issues"
+    "url": "https://github.com/limrun-inc/appium-xcuitest-driver/issues"
   },
   "engines": {
     "node": "^20.19.0 || ^22.12.0 || >=24.0.0",
     "npm": ">=10"
   },
   "appium": {
-    "driverName": "xcuitest",
-    "automationName": "XCUITest",
+    "driverName": "@limrun/xcuitest",
+    "automationName": "@limrun/xcuitest",
     "platformNames": [
       "iOS",
       "tvOS"
