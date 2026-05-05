@@ -282,11 +282,14 @@ async function pushFileToSimulator(
       `Parsed bundle identifier '${bundleId}' from '${remotePath}'. ` +
         `Will put the data into '${dstPath}'`,
     );
-    if (!(await fs.exists(path.dirname(dstPath)))) {
-      this.log.debug(`The destination folder '${path.dirname(dstPath)}' does not exist. Creating...`);
-      await mkdirp(path.dirname(dstPath));
+    const srcFolder = await tempDir.openDir();
+    const srcPath = path.resolve(srcFolder, path.basename(dstPath));
+    try {
+      await fs.writeFile(srcPath, buffer);
+      await device.simctl.lim.cp(dstPath, srcPath);
+    } finally {
+      await fs.rimraf(srcFolder);
     }
-    await fs.writeFile(dstPath, buffer);
     return;
   }
   const dstFolder = await tempDir.openDir();
