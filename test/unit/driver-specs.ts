@@ -300,6 +300,12 @@ describe('XCUITestDriver', function () {
         await expect(driver.createSession(null, null, _.cloneDeep(limCaps))).to.be.rejectedWith(/stop after udid/);
         expect(udidAtStart).to.eql('LIM-UDID');
       });
+      it('should replace the auto udid with the instance simulator', async function () {
+        sandbox.stub(Ios, 'createInstanceClient').resolves({deviceInfo: {udid: 'LIM-UDID'}} as any);
+        const withAuto = _.merge({}, limCaps, {alwaysMatch: {'appium:udid': 'auto'}});
+        await expect(driver.createSession(null, null, withAuto)).to.be.rejectedWith(/stop after udid/);
+        expect(udidAtStart).to.eql('LIM-UDID');
+      });
       it('should keep a udid the caller passed', async function () {
         sandbox.stub(Ios, 'createInstanceClient').resolves({deviceInfo: {udid: 'LIM-UDID'}} as any);
         const withUdid = _.merge({}, limCaps, {alwaysMatch: {'appium:udid': 'CALLER-UDID'}});
