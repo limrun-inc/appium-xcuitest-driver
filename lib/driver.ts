@@ -378,6 +378,13 @@ export class XCUITestDriver
         logLevel: (this.opts.limLogLevel as LogLevel | undefined) ?? 'info',
       });
       setLimrunIosClient(this._limClient);
+      // A Limrun instance serves exactly one simulator. Pinning its udid skips device
+      // discovery, which guesses the platform version from the host SDK and can miss the
+      // booted simulator when the host carries a newer runtime.
+      if (!this.opts.udid && this._limClient.deviceInfo?.udid) {
+        this.opts.udid = this._limClient.deviceInfo.udid;
+        this.log.info(`No udid specified. Using the Limrun instance simulator '${this.opts.udid}'`);
+      }
 
       await this.start();
 

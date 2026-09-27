@@ -9,6 +9,7 @@ import {RealDevice} from '../../lib/device/real-device-management';
 import net from 'node:net';
 import chai, {expect} from 'chai';
 import chaiAsPromised from 'chai-as-promised';
+import {Ios} from '@limrun/api';
 
 chai.use(chaiAsPromised);
 
@@ -270,6 +271,45 @@ describe('XCUITestDriver', function () {
             server.on('error', reject);
         });
        }
+      });
+    });
+
+    describe('createSession on a Limrun instance', function () {
+      const limCaps = _.merge({}, caps, {
+        alwaysMatch: {
+          'appium:limInstanceApiUrl': 'https://lim.example/v1/ios_x',
+          'appium:limInstanceToken': 'token',
+        },
+      });
+      let driver;
+      let udidAtStart;
+
+      beforeEach(function () {
+        driver = new XCUITestDriver({} as any);
+        udidAtStart = undefined;
+        // Stop right after the udid is settled; the rest of the session start is not under test.
+        sandbox.stub(driver, 'start').callsFake(async () => {
+          udidAtStart = driver.opts.udid;
+          throw new Error('stop after udid');
+        });
+        sandbox.stub(driver, 'deleteSession').resolves();
+      });
+
+      it('should default udid to the instance simulator', async function () {
+        sandbox.stub(Ios, 'createInstanceClient').resolves({deviceInfo: {udid: 'LIM-UDID'}} as any);
+        await expect(driver.createSession(null, null, _.cloneDeep(limCaps))).to.be.rejectedWith(/stop after udid/);
+        expect(udidAtStart).to.eql('LIM-UDID');
+      });
+      it('should keep a udid the caller passed', async function () {
+        sandbox.stub(Ios, 'createInstanceClient').resolves({deviceInfo: {udid: 'LIM-UDID'}} as any);
+        const withUdid = _.merge({}, limCaps, {alwaysMatch: {'appium:udid': 'CALLER-UDID'}});
+        await expect(driver.createSession(null, null, withUdid)).to.be.rejectedWith(/stop after udid/);
+        expect(udidAtStart).to.eql('CALLER-UDID');
+      });
+      it('should leave udid empty when the instance reports no device info', async function () {
+        sandbox.stub(Ios, 'createInstanceClient').resolves({} as any);
+        await expect(driver.createSession(null, null, _.cloneDeep(limCaps))).to.be.rejectedWith(/stop after udid/);
+        expect(udidAtStart).to.be.undefined;
       });
     });
 
