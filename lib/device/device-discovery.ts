@@ -192,9 +192,13 @@ export class DeviceDiscovery {
       });
       await this.ensurePlatformVersion(device);
       return this.toResult({device, realDevice: false, udid});
-    } catch {
+    } catch (e) {
+      if (this.sessionOpts.limInstanceApiUrl) {
+        // The instance udid is always a simulator; falling back to a real device would hide the failure.
+        throw new Error(`Cannot reach the Limrun simulator '${udid}': ${(e as Error).message}`, {cause: e});
+      }
       if (shouldCheckAvailableRealDevices) {
-        throw new Error(`Unknown device or simulator UDID: '${udid}'`);
+        throw new Error(`Unknown device or simulator UDID: '${udid}'`, {cause: e});
       }
       this.log.debug(
         'Skipping checking of the real devices availability since the session specifies appium:webDriverAgentUrl',

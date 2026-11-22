@@ -11,6 +11,7 @@ import {
   pushFile as realDevicePushFile,
 } from '../device/real-device-management.js';
 import type {XCUITestDriver} from '../driver.js';
+import {deleteContainerFile, pullContainerFile, pushContainerFile, unsupportedSimulatorPath} from '../limrun.js';
 import type {ContainerObject, ContainerRootSupplier} from './types.js';
 
 //#region Type Definitions
@@ -304,6 +305,11 @@ async function createService(driver: XCUITestDriver, remotePath: string): Promis
 async function pushFileToSimulator(this: XCUITestDriver, remotePath: string, base64Data: string): Promise<void> {
   const buffer = Buffer.from(base64Data, 'base64');
   const device = this.device as Simulator;
+  if (CONTAINER_PATH_PATTERN.test(remotePath) && this.limClient) {
+    const {bundleId, pathInContainer, containerType} = await parseContainerPath(this, remotePath);
+    await pushContainerFile(this, {bundleId, containerType, relativePath: pathInContainer}, buffer);
+    return;
+  }
   if (CONTAINER_PATH_PATTERN.test(remotePath)) {
     const {bundleId, pathInContainer: dstPath} = await parseContainerPath(
       this,
@@ -366,6 +372,16 @@ async function pushFileToRealDevice(this: XCUITestDriver, remotePath: string, ba
  * @returns Base-64 encoded content of the file.
  */
 async function pullFromSimulator(this: XCUITestDriver, remotePath: string, isFile: boolean): Promise<string> {
+  if (this.limClient) {
+    if (!CONTAINER_PATH_PATTERN.test(remotePath)) {
+      throw unsupportedSimulatorPath(remotePath);
+    }
+    if (!isFile) {
+      throw new errors.InvalidArgumentError(`Pulling the folder '${remotePath}' is not supported on Limrun simulators`);
+    }
+    const {bundleId, pathInContainer, containerType} = await parseContainerPath(this, remotePath);
+    return await pullContainerFile(this, {bundleId, containerType, relativePath: pathInContainer});
+  }
   let pathOnServer: string;
   const device = this.device as Simulator;
   if (CONTAINER_PATH_PATTERN.test(remotePath)) {
@@ -446,6 +462,14 @@ async function pullFromRealDevice(this: XCUITestDriver, remotePath: string, isFi
  * @returns Nothing
  */
 async function deleteFromSimulator(this: XCUITestDriver, remotePath: string): Promise<void> {
+  if (this.limClient) {
+    if (!CONTAINER_PATH_PATTERN.test(remotePath)) {
+      throw unsupportedSimulatorPath(remotePath);
+    }
+    const {bundleId, pathInContainer, containerType} = await parseContainerPath(this, remotePath);
+    await deleteContainerFile(this, {bundleId, containerType, relativePath: pathInContainer});
+    return;
+  }
   let pathOnServer: string;
   const device = this.device as Simulator;
   if (CONTAINER_PATH_PATTERN.test(remotePath)) {

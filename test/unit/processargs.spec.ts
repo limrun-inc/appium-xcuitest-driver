@@ -61,6 +61,8 @@ describe('process args', function () {
 
       const desiredWithProArgsObject = {
         platformName: 'iOS',
+        limInstanceApiUrl: 'https://eu.limrun.net/v1/ios_eu_x/api',
+        limInstanceToken: 'lim_test',
         platformVersion: '10.3',
         deviceName: 'iPhone 6',
         app: 'testapp.app',
@@ -78,6 +80,8 @@ describe('process args', function () {
 
       const desiredWithProArgsString = {
         platformName: 'iOS',
+        limInstanceApiUrl: 'https://eu.limrun.net/v1/ios_eu_x/api',
+        limInstanceToken: 'lim_test',
         platformVersion: '10.3',
         deviceName: 'iPhone 6',
         app: 'testapp.app',

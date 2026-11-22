@@ -139,7 +139,11 @@ const isRemoteXpcDependencyAvailable = memoize(async function ensureRemoteXpcDep
 });
 
 const getXcuitestDriverRoot = memoize(function getXcuitestDriverRoot(): string | null {
-  return node.getModuleRootSync('appium-xcuitest-driver', fileURLToPath(import.meta.url));
+  // Limrun publishes the driver as @limrun/appium-xcuitest-driver.
+  return (
+    node.getModuleRootSync('appium-xcuitest-driver', fileURLToPath(import.meta.url)) ??
+    node.getModuleRootSync('@limrun/appium-xcuitest-driver', fileURLToPath(import.meta.url))
+  );
 });
 
 export class OptionalIosRemoteXpcDependencyCheck implements IDoctorCheck {

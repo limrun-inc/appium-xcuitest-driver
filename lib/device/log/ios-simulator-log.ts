@@ -3,7 +3,7 @@ import fs from 'node:fs/promises';
 import {createInterface} from 'node:readline';
 
 import type {AppiumLogger} from '@appium/types';
-import type {Simulator, SpawnedProcess} from 'appium-ios-simulator';
+import {isLimrunSimulator, type Simulator, type SpawnedProcess} from 'appium-ios-simulator';
 import {util} from 'appium/support.js';
 import {exec} from 'teen_process';
 import {transports, createLogger, format} from 'winston';
@@ -231,6 +231,10 @@ export class IOSSimulatorLog extends LineConsumingLog {
   }
 
   private async cleanupObsoleteLogStreams(): Promise<void> {
+    if (isLimrunSimulator()) {
+      // Limrun reports pids of the Limrun host; killing them here would hit unrelated local processes.
+      return;
+    }
     const processes = await this.sim.ps();
     const pids = processes.filter(({name}) => LOG_STREAMING_PROCESS_NAME_PATTERN.test(name)).map(({pid}) => pid);
     if (isEmpty(pids)) {

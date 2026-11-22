@@ -10,6 +10,7 @@ import type {
   DriverCaps,
   DriverOpts,
 } from '@appium/types';
+import type {Ios} from '@limrun/api';
 import {BaseSimulator, type Simulator} from 'appium-ios-simulator';
 import type {RemoteDebugger} from 'appium-remote-debugger';
 import {WebDriverAgent, type WebDriverAgentArgs} from 'appium-webdriveragent';
@@ -124,6 +125,7 @@ import {
   createWdaHostOps,
 } from './device/wda-host-ops.js';
 import {executeMethodMap} from './execute-method-map.js';
+import {startLimrunSession, stopLimrunSession} from './limrun.js';
 import {newMethodMap} from './method-map.js';
 import {sessionClaimHandler} from './session-claim-handler.js';
 import type {CalibrationCacheEntry, IConditionInducer, LifecycleData} from './types.js';
@@ -274,6 +276,8 @@ export class XCUITestDriver
   _device!: Simulator | RealDevice;
   _iosSdkVersion!: string | null;
   _wda: WebDriverAgent | null;
+  /** The client of the Limrun iOS instance this session drives. */
+  limClient: Ios.InstanceClient | null = null;
   _remote: RemoteDebugger | null;
   logs: DriverLogs;
   _bidiServerLogListener: LogListener | undefined;
@@ -930,6 +934,8 @@ export class XCUITestDriver
         this.validateDesiredCaps({...caps, ...this.cliArgs});
       }
 
+      await this.connectLimrunInstance();
+
       await this.start();
 
       // merge server capabilities + desired capabilities
@@ -946,6 +952,11 @@ export class XCUITestDriver
       await this.deleteSession();
       throw e;
     }
+  }
+
+  /** Connects the session to its Limrun iOS instance; see {@link startLimrunSession}. */
+  async connectLimrunInstance(): Promise<void> {
+    await startLimrunSession(this);
   }
 
   override async deleteSession(sessionId?: string): Promise<void> {
@@ -1021,6 +1032,8 @@ export class XCUITestDriver
       this.log.info('Closing MJPEG stream');
       this.mjpegStream.stop();
     }
+
+    stopLimrunSession(this);
 
     this.resetProperties();
 

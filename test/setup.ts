@@ -5,7 +5,8 @@ import {fileURLToPath} from 'node:url';
 import {fs, net, tempDir, zip, node} from 'appium/support.js';
 
 export const FIXTURES_ROOT = path.resolve(
-  node.getModuleRootSync('appium-xcuitest-driver', fileURLToPath(import.meta.url))!,
+  (node.getModuleRootSync('appium-xcuitest-driver', fileURLToPath(import.meta.url)) ??
+    node.getModuleRootSync('@limrun/appium-xcuitest-driver', fileURLToPath(import.meta.url)))!,
   'test',
   'fixtures',
 );

@@ -16,7 +16,10 @@ export interface DriverInfo {
 
 /** Gets driver build/version metadata from package manifest. */
 export const getDriverInfo = memoize(async function getDriverInfo(): Promise<DriverInfo> {
-  const moduleRoot = node.getModuleRootSync(MODULE_NAME, fileURLToPath(import.meta.url));
+  // Limrun publishes the driver as @limrun/appium-xcuitest-driver.
+  const moduleRoot =
+    node.getModuleRootSync(MODULE_NAME, fileURLToPath(import.meta.url)) ??
+    node.getModuleRootSync(`@limrun/${MODULE_NAME}`, fileURLToPath(import.meta.url));
   if (!moduleRoot) {
     throw new Error(`Cannot find the package manifest of ${MODULE_NAME}`);
   }

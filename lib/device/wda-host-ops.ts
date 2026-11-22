@@ -35,6 +35,11 @@ interface HostStrategyCaps {
  * Whether the selected session strategy must avoid host-side Xcode/Simulator utilities.
  */
 export function isStrictHostUtilityMode(opts: HostStrategyCaps, platform: NodeJS.Platform = process.platform): boolean {
+  // A Limrun simulator is reached through the Limrun SDK, not this host's Simulator tools,
+  // so it stays a simulator on any platform.
+  if (opts.limInstanceApiUrl) {
+    return false;
+  }
   return platform !== 'darwin' && Boolean(opts.webDriverAgentUrl || opts.usePreinstalledWDA);
 }
 
