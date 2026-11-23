@@ -6,6 +6,7 @@ import {fs, util} from 'appium/support.js';
 
 import {InstallationProxyClient} from '../device/installation-proxy-client.js';
 import type {XCUITestDriver} from '../driver.js';
+import {listLimrunApps} from '../limrun.js';
 import type {AppInfoMapping} from '../types.js';
 import {SUPPORTED_EXTENSIONS} from './constants.js';
 import type {AppState} from './enum.js';
@@ -262,7 +263,7 @@ export async function queryAppState(this: XCUITestDriver, bundleId: string): Pro
 }
 
 /**
- * List applications installed on the real device under test
+ * List applications installed on the real device under test, or on a Limrun simulator
  *
  * Read [Pushing/Pulling files](https://appium.io/docs/en/writing-running-appium/ios/ios-xctest-file-movement/) for more details.
  * @param applicationType - The type of applications to list (default: 'User').
@@ -277,6 +278,9 @@ export async function mobileListApps(
   applicationType: 'User' | 'System' = 'User',
   returnAttributes?: string[],
 ): Promise<AppInfoMapping> {
+  if (this.limClient) {
+    return await listLimrunApps(this, applicationType, returnAttributes);
+  }
   const device = requireRealDevice(this, 'Listing apps');
   const client = await InstallationProxyClient.create(device.udid, {
     facade: this.remoteXPCFacade,

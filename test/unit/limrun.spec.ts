@@ -29,7 +29,8 @@ mock.module('@limrun/api', {
   },
 });
 
-const {startLimrunSession, stopLimrunSession} = await import('../../lib/limrun.js');
+const {startLimrunSession, stopLimrunSession, listLimrunApps, LimrunScreenRecorder} =
+  await import('../../lib/limrun.js');
 const {isStrictHostUtilityMode} = await import('../../lib/device/wda-host-ops.js');
 
 function fakeDriver(opts: Record<string, unknown>): any {
@@ -101,5 +102,85 @@ describe('Limrun session', function () {
     const opts = {webDriverAgentUrl: 'https://eu.limrun.net/x', udid: UDID};
     assert.equal(isStrictHostUtilityMode(opts, 'linux'), true);
     assert.equal(isStrictHostUtilityMode({...opts, limInstanceApiUrl: API_URL}, 'linux'), false);
+  });
+});
+
+describe('Limrun apps and recording', function () {
+  const LISTAPPS = `{
+    "com.apple.mobilesafari" =     {
+        ApplicationType = System;
+        CFBundleIdentifier = "com.apple.mobilesafari";
+        CFBundleName = Safari;
+    };
+    "com.example.app" =     {
+        ApplicationType = User;
+        CFBundleIdentifier = "com.example.app";
+        CFBundleName = Example;
+        UIFileSharingEnabled = 1;
+    };
+}`;
+
+  it('lists the apps of one type with the requested attributes', async function () {
+    const calls: string[][] = [];
+    const driver = {
+      opts: {udid: UDID},
+      limClient: {
+        simctl: (args: string[]) => {
+          calls.push(args);
+          return {wait: async () => ({code: 0, stdout: LISTAPPS, stderr: ''})};
+        },
+      },
+    } as any;
+    assert.deepEqual(await listLimrunApps(driver, 'User'), {
+      'com.example.app': {
+        ApplicationType: 'User',
+        CFBundleIdentifier: 'com.example.app',
+        CFBundleName: 'Example',
+        UIFileSharingEnabled: '1',
+      },
+    });
+    assert.deepEqual(await listLimrunApps(driver, 'System', ['CFBundleName', 'Missing']), {
+      'com.apple.mobilesafari': {CFBundleName: 'Safari'},
+    });
+    assert.deepEqual(calls[0], ['listapps', UDID]);
+  });
+
+  it('records with one stop that downloads the video, even when stopped twice', async function () {
+    const events: unknown[] = [];
+    const client = {
+      startRecordingSession: async (opts: unknown) => {
+        events.push({start: opts});
+        return 'rec1';
+      },
+      stopRecordingSession: async (id: string, saveTo: unknown) => {
+        events.push({stop: id, saveTo});
+      },
+    } as any;
+    const recorder = new LimrunScreenRecorder(client, {warn: () => {}} as any, '/tmp/limrun-test-video.mp4');
+    assert.equal(await recorder.interrupt(true), true, 'nothing to stop before start');
+    await recorder.start(60_000);
+    assert.equal(await recorder.finish(), '/tmp/limrun-test-video.mp4');
+    assert.equal(await recorder.interrupt(true), true);
+    await recorder.cleanup();
+    assert.deepEqual(events, [
+      {start: {touchIndicators: false}},
+      {stop: 'rec1', saveTo: {localPath: '/tmp/limrun-test-video.mp4'}},
+    ]);
+  });
+
+  it('stops the recording at its time limit', async function () {
+    let stops = 0;
+    const client = {
+      startRecordingSession: async () => 'rec2',
+      stopRecordingSession: async () => {
+        stops++;
+      },
+    } as any;
+    const recorder = new LimrunScreenRecorder(client, {warn: () => {}} as any, '/tmp/limrun-test-video-2.mp4');
+    await recorder.start(10);
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    assert.equal(stops, 1);
+    await recorder.finish();
+    assert.equal(stops, 1);
   });
 });

@@ -5,6 +5,7 @@ import {waitForCondition} from 'asyncbox';
 import {exec, SubProcess} from 'teen_process';
 
 import type {XCUITestDriver} from '../driver.js';
+import {LimrunScreenRecorder} from '../limrun.js';
 import {encodeBase64OrUpload} from './helpers/index.js';
 import type {StartRecordingScreenOptions, StopRecordingScreenOptions} from './types.js';
 
@@ -382,6 +383,10 @@ export async function startRecordingScreen(
     suffix: MP4_EXT,
   });
 
+  if (this.limClient) {
+    return await startLimrunRecording(this, videoPath, timeLimit, result);
+  }
+
   const screenRecorder = new ScreenRecorder(this.device.udid, this.log, videoPath, {
     remotePort: this.opts.mjpegServerPort || DEFAULT_MJPEG_SERVER_PORT,
     remoteUrl: this.opts.wdaBaseUrl || WDA_BASE_URL,
@@ -452,6 +457,43 @@ export async function startRecordingScreen(
   }
   this._recentScreenRecorder = screenRecorder;
 
+  return result;
+}
+
+async function startLimrunRecording(
+  driver: XCUITestDriver,
+  videoPath: string,
+  timeLimit: string | number,
+  result: string,
+): Promise<string> {
+  if (driver._recentScreenRecorder) {
+    await driver._recentScreenRecorder.interrupt(true);
+    await driver._recentScreenRecorder.cleanup();
+    driver._recentScreenRecorder = null;
+  }
+  const timeoutSeconds = parseFloat(String(timeLimit));
+  if (isNaN(timeoutSeconds) || timeoutSeconds > MAX_RECORDING_TIME_SEC || timeoutSeconds <= 0) {
+    throw driver.log.errorWithException(
+      `The timeLimit value must be in range [1, ${MAX_RECORDING_TIME_SEC}] seconds. ` +
+        `The value of '${timeLimit}' has been passed instead.`,
+    );
+  }
+  driver.log.info(
+    'Recording with the Limrun instance encoder; the video type, quality, fps, scale, filter and ' +
+      'hardware acceleration options do not apply',
+  );
+  const recorder = new LimrunScreenRecorder(
+    driver.limClient as NonNullable<XCUITestDriver['limClient']>,
+    driver.log,
+    videoPath,
+  );
+  try {
+    await recorder.start(timeoutSeconds * 1000);
+  } catch (e) {
+    await recorder.cleanup();
+    throw e;
+  }
+  driver._recentScreenRecorder = recorder;
   return result;
 }
 

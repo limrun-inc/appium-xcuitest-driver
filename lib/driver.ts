@@ -125,7 +125,7 @@ import {
   createWdaHostOps,
 } from './device/wda-host-ops.js';
 import {executeMethodMap} from './execute-method-map.js';
-import {startLimrunSession, stopLimrunSession} from './limrun.js';
+import {startLimrunSession, stopLimrunSession, type LimrunScreenRecorder} from './limrun.js';
 import {newMethodMap} from './method-map.js';
 import {sessionClaimHandler} from './session-claim-handler.js';
 import type {CalibrationCacheEntry, IConditionInducer, LifecycleData} from './types.js';
@@ -272,7 +272,7 @@ export class XCUITestDriver
   _networkMonitorSession: NetworkMonitorSession | null;
   _systemMonitorSession: SystemMonitorSession | null;
   _remoteXPCFacade: RemoteXPCFacade | null;
-  _recentScreenRecorder!: ScreenRecorder | null;
+  _recentScreenRecorder!: ScreenRecorder | LimrunScreenRecorder | null;
   _device!: Simulator | RealDevice;
   _iosSdkVersion!: string | null;
   _wda: WebDriverAgent | null;

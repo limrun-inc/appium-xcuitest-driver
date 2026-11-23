@@ -2,12 +2,14 @@ import path from 'node:path';
 
 import {Ios, type LogLevel} from '@limrun/api';
 import {startTcpTunnel, type Tunnel} from '@limrun/api/tunnel';
+import {parseAsciiPlist} from 'appium-ios-simulator';
 import {registerLimrunClient, unregisterLimrunClient} from 'appium-xcode';
 import {errors} from 'appium/driver.js';
 import {fs, tempDir} from 'appium/support.js';
 
 import {UDID_AUTO} from './constants.js';
 import type {XCUITestDriver} from './driver.js';
+import type {AppInfoMapping} from './types.js';
 
 /** The port WebDriverAgent listens on inside the simulator. */
 const WDA_PORT = 8100;
@@ -163,6 +165,100 @@ export function unsupportedSimulatorPath(remotePath: string): Error {
     `'${remotePath}' is outside an app container, which Limrun simulators do not expose. ` +
       `Use the '@<bundleId>[:<containerType>]/<path>' form.`,
   );
+}
+
+/**
+ * Lists the simulator's apps of one type with `simctl listapps`, keyed by bundle id, the shape a
+ * real device's installation proxy returns. Values are the strings simctl prints.
+ */
+export async function listLimrunApps(
+  driver: XCUITestDriver,
+  applicationType: 'User' | 'System',
+  returnAttributes?: string[],
+): Promise<AppInfoMapping> {
+  const udid = driver.opts.udid as string;
+  const {code, stdout, stderr} = await limClientOf(driver).simctl(['listapps', udid]).wait();
+  if (code !== 0) {
+    throw new Error(`simctl listapps failed: ${(stderr || stdout).trim()}`);
+  }
+  const apps = parseAsciiPlist(stdout) as Record<string, Record<string, unknown>>;
+  return Object.fromEntries(
+    Object.entries(apps)
+      .filter(([, info]) => info.ApplicationType === applicationType)
+      .map(([bundleId, info]) => [
+        bundleId,
+        returnAttributes
+          ? Object.fromEntries(returnAttributes.filter((a) => a in info).map((a) => [a, info[a]]))
+          : info,
+      ]),
+  ) as AppInfoMapping;
+}
+
+/**
+ * Records the screen with the instance's own encoder, the one that feeds its WebRTC stream,
+ * instead of ffmpeg reading WebDriverAgent's MJPEG port, which the instance does not expose.
+ * It has the same lifecycle as the ffmpeg recorder.
+ */
+export class LimrunScreenRecorder {
+  private recordingId: string | null = null;
+  private stopping: Promise<void> | null = null;
+  private timer: NodeJS.Timeout | null = null;
+
+  constructor(
+    private readonly client: Ios.InstanceClient,
+    private readonly log: XCUITestDriver['log'],
+    private readonly videoPath: string,
+  ) {}
+
+  async start(timeoutMs: number): Promise<void> {
+    // Touch indicators are off, so the video matches what the app shows.
+    this.recordingId = await this.client.startRecordingSession({touchIndicators: false});
+    this.timer = setTimeout(() => {
+      this.stop().catch((err) => this.log.warn(`Cannot stop the screen recording at its time limit: ${err.message}`));
+    }, timeoutMs);
+  }
+
+  async interrupt(force = false): Promise<boolean> {
+    try {
+      await this.stop();
+    } catch (err) {
+      this.log.warn(`Cannot stop the screen recording: ${(err as Error).message}`);
+      return force;
+    }
+    return true;
+  }
+
+  async finish(): Promise<string> {
+    await this.stop();
+    return this.videoPath;
+  }
+
+  async cleanup(): Promise<void> {
+    this.clearTimer();
+    if (await fs.exists(this.videoPath)) {
+      await fs.rimraf(this.videoPath);
+    }
+  }
+
+  /** Stops the recording once and downloads it; later calls wait for the same stop. */
+  private stop(): Promise<void> {
+    const recordingId = this.recordingId;
+    if (!recordingId) {
+      return Promise.resolve();
+    }
+    this.stopping ??= (async () => {
+      this.clearTimer();
+      await this.client.stopRecordingSession(recordingId, {localPath: this.videoPath});
+    })();
+    return this.stopping;
+  }
+
+  private clearTimer(): void {
+    if (this.timer) {
+      clearTimeout(this.timer);
+      this.timer = null;
+    }
+  }
 }
 
 function limClientOf(driver: XCUITestDriver): Ios.InstanceClient {
