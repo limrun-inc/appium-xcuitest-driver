@@ -410,6 +410,10 @@ async function verifyApplicationPlatform(driver: XCUITestDriver): Promise<void> 
   if (driver.isRealDevice()) {
     return;
   }
+  if (driver.limClient) {
+    // The simulator runs on a Limrun host, so this machine's CPU says nothing about what it can run.
+    return;
+  }
 
   const executablePath = path.resolve(
     driver.opts.app,

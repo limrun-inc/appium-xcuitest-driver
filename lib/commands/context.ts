@@ -8,6 +8,7 @@ import {IOSPerformanceLog} from '../device/log/ios-performance-log.js';
 import type {SafariConsoleEntry, SafariConsoleLog} from '../device/log/safari-console-log.js';
 import type {SafariNetworkLogEntry, SafariNetworkLog} from '../device/log/safari-network-log.js';
 import type {XCUITestDriver} from '../driver.js';
+import {closeWebInspectorTunnel, openWebInspectorTunnel} from '../limrun.js';
 import type {Page} from '../types.js';
 import {isEmpty} from '../utils/index.js';
 import {BIDI_EVENT_NAME} from './bidi/constants.js';
@@ -328,6 +329,7 @@ export async function stopRemote(this: XCUITestDriver): Promise<void> {
       this.log.warn(`Failed to notify BiDi context change: ${(err as Error).message}`);
     }
   } finally {
+    closeWebInspectorTunnel(this);
     this.curWebFrames = [];
     this._remote = null;
   }
@@ -413,6 +415,8 @@ export async function getNewRemoteDebugger(this: XCUITestDriver): Promise<Remote
   const socketPath = isRealDevice
     ? undefined
     : ((await (this.device as Simulator).getWebInspectorSocket()) ?? undefined);
+  // The socket lives on the Limrun host; the remote debugger reaches it over a local TCP tunnel.
+  const limrunAddress = socketPath ? await openWebInspectorTunnel(this, socketPath) : undefined;
 
   const baseOpts: RemoteDebuggerOptions = {
     bundleId: this.opts.bundleId,
@@ -423,7 +427,8 @@ export async function getNewRemoteDebugger(this: XCUITestDriver): Promise<Remote
     pageLoadMs: this.pageLoadMs,
     platformVersion: this.opts.platformVersion,
     emulateUserGestureForInteractionAtoms: true,
-    socketPath,
+    socketPath: limrunAddress ? undefined : socketPath,
+    ...limrunAddress,
     remoteDebugProxy: this.opts.remoteDebugProxy,
     garbageCollectOnExecute: util.hasValue(this.opts.safariGarbageCollect) ? !!this.opts.safariGarbageCollect : false,
     logAllCommunication: this.opts.safariLogAllCommunication,

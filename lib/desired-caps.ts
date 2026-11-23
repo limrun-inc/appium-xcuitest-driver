@@ -371,6 +371,24 @@ export const desiredCapConstraints = {
     isString: true,
     inclusionCaseInsensitive: ['none', 'eager', 'normal'],
   },
+  // The Limrun iOS instance this session drives: its API URL and token.
+  limInstanceApiUrl: {
+    isString: true,
+    presence: true,
+  },
+  limInstanceToken: {
+    isString: true,
+    presence: true,
+  },
+  limLogLevel: {
+    isString: true,
+    inclusionCaseInsensitive: ['none', 'error', 'warn', 'info', 'debug'],
+  },
+  // Headers sent with every WebDriverAgent request. Kept for sessions written for
+  // the 10.x fork; it now feeds WebDriverAgent's own extraRequestHeaders.
+  wdaRequestHeaders: {
+    isObject: true,
+  },
 } as const satisfies Constraints;
 
 export type XCUITestDriverConstraints = typeof desiredCapConstraints;

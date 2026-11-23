@@ -76,7 +76,10 @@ function normalizeKind(kind) {
  * @returns {Promise<string>}
  */
 async function getWebdriveragentPkgVersion() {
-  const moduleRoot = node.getModuleRootSync('appium-xcuitest-driver', fileURLToPath(import.meta.url));
+  // Limrun publishes the driver as @limrun/appium-xcuitest-driver.
+  const moduleRoot =
+    node.getModuleRootSync('appium-xcuitest-driver', fileURLToPath(import.meta.url)) ??
+    node.getModuleRootSync('@limrun/appium-xcuitest-driver', fileURLToPath(import.meta.url));
   if (!moduleRoot) {
     throw new Error('Cannot resolve module root for appium-xcuitest-driver');
   }

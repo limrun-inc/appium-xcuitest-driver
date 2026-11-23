@@ -72,6 +72,17 @@ export async function mobileSimctl(
     );
   }
 
+  if (this.limClient) {
+    // simctl runs on the Limrun host, which allows only some subcommands.
+    const execution = this.limClient.simctl([command, this.opts.udid, ...args]);
+    const result = await (timeout ? withTimeout(execution.wait(), timeout, command) : execution.wait());
+    if (result.code !== 0) {
+      throw new Error(
+        `simctl ${command} failed with exit code ${result.code}: ${(result.stderr || result.stdout).trim()}`,
+      );
+    }
+    return {stdout: result.stdout, stderr: result.stderr, code: result.code};
+  }
   const setArgs = simulator.devicesSetPath ? ['--set', simulator.devicesSetPath] : [];
   const result = await exec('xcrun', ['simctl', ...setArgs, command, this.opts.udid, ...args], {timeout});
   return {
@@ -79,4 +90,16 @@ export async function mobileSimctl(
     stderr: result?.stderr ?? '',
     code: result?.code ?? 0,
   };
+}
+
+async function withTimeout<T>(promise: Promise<T>, timeout: number, command: string): Promise<T> {
+  let timer: NodeJS.Timeout | undefined;
+  const expired = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => reject(new Error(`simctl ${command} timed out after ${timeout}ms`)), timeout);
+  });
+  try {
+    return await Promise.race([promise, expired]);
+  } finally {
+    clearTimeout(timer);
+  }
 }

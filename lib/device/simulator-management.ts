@@ -147,6 +147,11 @@ export async function getExistingSim(
  */
 export async function shutdownSimulator(this: XCUITestDriver): Promise<void> {
   const device = this.device as Simulator;
+  if (this.limClient) {
+    // The simulator lives as long as its Limrun instance, and its test processes run on the Limrun host.
+    this.log.info(`Leaving the Limrun simulator '${device.udid}' running; delete the instance to shut it down`);
+    return;
+  }
   // stop XCTest processes if running to avoid unexpected side effects
   await resetTestProcesses(device.udid, true);
   await device.shutdown();

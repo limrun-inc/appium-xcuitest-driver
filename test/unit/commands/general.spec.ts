@@ -111,6 +111,7 @@ describe('general commands', function () {
     // create new driver with no opts
     let driver: XCUITestDriver;
     let startStub: sinon.SinonStub;
+    let limrunStub: sinon.SinonStub;
 
     const baseCaps = {
       firstMatch: [{}],
@@ -118,16 +119,20 @@ describe('general commands', function () {
         platformName: 'iOS',
         'appium:deviceName': 'bar',
         'appium:app': '/fake',
+        'appium:limInstanceApiUrl': 'https://eu.limrun.net/v1/ios_eu_x/api',
+        'appium:limInstanceToken': 'lim_test',
       },
     };
 
     beforeEach(function () {
       driver = new XCUITestDriver({} as any);
       startStub = sinon.stub(driver as any, 'start');
+      limrunStub = sinon.stub(driver, 'connectLimrunInstance').resolves();
     });
 
     afterEach(function () {
       startStub.restore();
+      limrunStub.restore();
       driver = null as any;
     });
 

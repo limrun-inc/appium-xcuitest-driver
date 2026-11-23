@@ -12,6 +12,7 @@ import * as realDeviceManagementModule from '../../lib/device/real-device-manage
 import * as simulatorManagementModule from '../../lib/device/simulator-management.js';
 import * as wdaHostOpsModule from '../../lib/device/wda-host-ops.js';
 import type {XCUITestDriverOpts} from '../../lib/driver.js';
+import * as limrunModule from '../../lib/limrun.js';
 import {mergeDeep} from '../../lib/utils/index.js';
 import {UNIT_LONG_TIMEOUT_MS} from './helpers.js';
 
@@ -74,6 +75,14 @@ mock.module(REAL_DEVICE_MANAGEMENT_PATH, {
     installToRealDevice: (...args: any[]) => currentInstallToRealDevice(...args),
   },
 });
+// Session tests run without a Limrun instance; test/unit/limrun.spec.ts covers the connection.
+mock.module('../../lib/limrun.js', {
+  namedExports: {
+    ...limrunModule,
+    startLimrunSession: async () => {},
+    stopLimrunSession: () => {},
+  },
+});
 mock.module(SIMULATOR_MANAGEMENT_PATH, {
   namedExports: {
     ...simulatorManagementModule,
@@ -106,6 +115,8 @@ const caps = {
     'appium:deviceName': 'iPhone 6',
     'appium:app': '/foo.app',
     'appium:platformVersion': '10.0',
+    'appium:limInstanceApiUrl': 'https://eu.limrun.net/v1/ios_eu_x/api',
+    'appium:limInstanceToken': 'lim_test',
   },
 };
 

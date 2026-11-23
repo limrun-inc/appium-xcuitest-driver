@@ -1,6 +1,6 @@
 {
-  "name": "appium-xcuitest-driver",
-  "version": "12.22.8",
+  "name": "@limrun/appium-xcuitest-driver",
+  "version": "12.22.8-lim.1",
   "description": "Appium driver for iOS using XCUITest for backend",
   "keywords": [
     "appium",
@@ -10,13 +10,13 @@
     "xcuitest"
   ],
   "bugs": {
-    "url": "https://github.com/appium/appium-xcuitest-driver/issues"
+    "url": "https://github.com/limrun-inc/appium-xcuitest-driver/issues"
   },
   "license": "Apache-2.0",
   "author": "Appium Contributors",
   "repository": {
     "type": "git",
-    "url": "https://github.com/appium/appium-xcuitest-driver.git"
+    "url": "https://github.com/limrun-inc/appium-xcuitest-driver.git"
   },
   "bin": {},
   "directories": {
@@ -73,11 +73,12 @@
     "@appium/css-locator-to-native": "^1.0.1",
     "@appium/strongbox": "^2.0.0",
     "@colors/colors": "^1.6.0",
+    "@limrun/api": "^0.76.0",
     "appium-ios-device": "^3.1.26",
-    "appium-ios-simulator": "^10.10.0",
+    "appium-ios-simulator": "npm:@limrun/appium-ios-simulator@10.11.2-lim.1",
     "appium-remote-debugger": "^17.7.3",
-    "appium-webdriveragent": "^16.17.2",
-    "appium-xcode": "^7.1.1",
+    "appium-webdriveragent": "npm:@limrun/appium-webdriveragent@16.18.2-lim.1",
+    "appium-xcode": "npm:@limrun/appium-xcode@7.2.5-lim.1",
     "async-lock": "^1.4.0",
     "asyncbox": "^6.4.3",
     "axios": "^1.18.0",
@@ -121,8 +122,8 @@
     "npm": ">=10"
   },
   "appium": {
-    "driverName": "xcuitest",
-    "automationName": "XCUITest",
+    "driverName": "@limrun/xcuitest",
+    "automationName": "@limrun/xcuitest",
     "platformNames": [
       "iOS",
       "tvOS",
@@ -140,23 +141,6 @@
       "list-real-devices": "./scripts/list-real-devices.mjs",
       "cleanup-videos": "./scripts/cleanup-videos.mjs",
       "pair-appletv": "./scripts/pair-appletv.mjs"
-    },
-    "schema": {
-      "$schema": "http://json-schema.org/draft-07/schema",
-      "type": "object",
-      "properties": {
-        "webdriveragent-port": {
-          "appiumCliDest": "wdaLocalPort",
-          "default": 8100,
-          "description": "Local port used for communication with WebDriverAgent",
-          "maximum": 65535,
-          "minimum": 1,
-          "type": "integer"
-        }
-      },
-      "additionalProperties": false,
-      "title": "XCUITest Driver Configuration",
-      "description": "Appium configuration schema for the XCUITest driver."
     },
     "doctor": {
       "checks": [

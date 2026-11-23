@@ -51,6 +51,8 @@ describe('language and locale', function () {
       };
       const desiredCapabilities: any = {
         platformName: 'iOS',
+        limInstanceApiUrl: 'https://eu.limrun.net/v1/ios_eu_x/api',
+        limInstanceToken: 'lim_test',
         platformVersion: '9.3',
         deviceName: 'iPhone 6',
         app: 'testapp.app',
@@ -106,6 +108,8 @@ describe('language and locale', function () {
 
       const desiredCapabilities: any = {
         platformName: 'iOS',
+        limInstanceApiUrl: 'https://eu.limrun.net/v1/ios_eu_x/api',
+        limInstanceToken: 'lim_test',
         platformVersion: '9.3',
         deviceName: 'iPhone 6',
         app: 'testapp.app',
