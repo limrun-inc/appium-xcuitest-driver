@@ -101,14 +101,14 @@ export function closeWebInspectorTunnel(driver: XCUITestDriver): void {
   webInspectorTunnels.delete(driver);
 }
 
-/** Disconnects the session's instance client and forgets its udid. */
+/** Disconnects the session's instance client and unregisters it, unless a newer session replaced it. */
 export function stopLimrunSession(driver: XCUITestDriver): void {
   closeWebInspectorTunnel(driver);
   const client = driver.limClient;
   if (!client) {
     return;
   }
-  unregisterLimrunClient(client.deviceInfo.udid);
+  unregisterLimrunClient(client.deviceInfo.udid, client);
   client.disconnect();
   driver.limClient = null;
 }
