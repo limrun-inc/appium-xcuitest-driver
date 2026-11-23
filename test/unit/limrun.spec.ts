@@ -8,6 +8,8 @@ const API_URL = 'https://eu.limrun.net/v1/ios_eu_x/api';
 
 let disconnected = 0;
 let createOptions: unknown[] = [];
+// Clients the next connections return before falling back to fakeClient.
+let queuedClients: unknown[] = [];
 
 // A Limrun instance client as the SDK returns it after connecting.
 const fakeClient = {
@@ -23,7 +25,7 @@ mock.module('@limrun/api', {
     Ios: {
       createInstanceClient: async (options: unknown) => {
         createOptions.push(options);
-        return fakeClient;
+        return queuedClients.shift() ?? fakeClient;
       },
     },
   },
@@ -45,6 +47,7 @@ describe('Limrun session', function () {
   beforeEach(function () {
     disconnected = 0;
     createOptions = [];
+    queuedClients = [];
   });
 
   afterEach(function () {
@@ -95,6 +98,21 @@ describe('Limrun session', function () {
 
     assert.equal(disconnected, 1);
     assert.equal(driver.limClient, null);
+    assert.throws(() => limrunClientFor(UDID), /No Limrun instance serves/);
+  });
+
+  it('keeps the client of a newer session on the same instance when an older session stops', async function () {
+    const newerClient = {...fakeClient};
+    const older = fakeDriver({});
+    await startLimrunSession(older);
+    queuedClients = [newerClient];
+    const newer = fakeDriver({});
+    await startLimrunSession(newer);
+
+    stopLimrunSession(older);
+    assert.equal(limrunClientFor(UDID), newerClient);
+
+    stopLimrunSession(newer);
     assert.throws(() => limrunClientFor(UDID), /No Limrun instance serves/);
   });
 
