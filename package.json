@@ -73,7 +73,7 @@
     "@appium/css-locator-to-native": "^1.0.1",
     "@appium/strongbox": "^2.0.0",
     "@colors/colors": "^1.6.0",
-    "@limrun/api": "^0.74.0",
+    "@limrun/api": "^0.76.0",
     "appium-ios-device": "^3.1.26",
     "appium-ios-simulator": "npm:@limrun/appium-ios-simulator@10.11.2-lim.1",
     "appium-remote-debugger": "^17.7.3",
